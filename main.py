@@ -20,6 +20,9 @@ class Body:
 
         # Newton's Law of Universal Gravitation in Vector Form
         # Fg = -G * (m1m2 / |r_21|^3) * r_21
+        # gravitation_force is added to the new force here because if there is more than two bodies in the simulation
+        # then we need to add the totals up. But at the end of update_velocity_and_position we reset the total
+        # gravitational_force to zero to recalculate gravity based on the new positions
         self.gravitational_force = self.gravitational_force + -G * ((exterting_body.mass * self.mass) * (self.position - exterting_body.position)) \
                                    / (np.linalg.norm(self.position - exterting_body.position) ** 3)
 
@@ -29,6 +32,8 @@ class Body:
 
         # Convert velocity into position
         self.position = self.position + (self.velocity * delta_time)
+
+        # Reset the gravitational_force since positions have changed, thus changing the gravitational effects
         self.gravitational_force = [0, 0]
 
         # Record the history for the plot animation
@@ -54,18 +59,26 @@ def find_min_max_between_arrays(arr1, arr2):
 def animate(step):
     history1_x = body1.position_history_x[:step]
     history1_y = body1.position_history_y[:step]
+
     history2_x = body2.position_history_x[:step]
     history2_y = body2.position_history_y[:step]
+
+    history3_x = body3.position_history_x[:step]
+    history3_y = body3.position_history_y[:step]
 
     # Plot positions
     trace_body1.set_data(history1_x, history1_y)
     trace_body2.set_data(history2_x, history2_y)
+    trace_body3.set_data(history3_x, history3_y)
+
     time_text.set_text(time_template % step)
-    return trace_body1, trace_body2, time_text
+
+    return trace_body1, trace_body2, trace_body3, time_text
 
 
-body1 = Body(2, np.array([0, .5]), np.array([-1, 0]))
-body2 = Body(2, np.array([0, -.5]), np.array([1, 0]))
+body1 = Body(2, np.array([0, 1]), np.array([-1, 0]))
+body2 = Body(2, np.array([0, -1]), np.array([1, 0]))
+body3 = Body(2, np.array([0, 0]), np.array([0, 0]))
 
 frame_time = float(input("What is the frame time: "))
 time_scale = int(input("Number of frames to calculate through: "))
@@ -76,10 +89,15 @@ for i in range(time_scale):
         print("{}%".format(round((i / time_scale) * 100), 2))
 
     body1.calc_gravitational_force(body2)
+    body1.calc_gravitational_force(body3)
     body2.calc_gravitational_force(body1)
+    body2.calc_gravitational_force(body3)
+    body3.calc_gravitational_force(body1)
+    body3.calc_gravitational_force(body2)
 
     body1.update_velocity_and_position(frame_time)
     body2.update_velocity_and_position(frame_time)
+    body3.update_velocity_and_position(frame_time)
 
 x_min, x_max = find_min_max_between_arrays(body1.position_history_x, body2.position_history_x)
 y_min, y_max = find_min_max_between_arrays(body1.position_history_y, body2.position_history_y)
@@ -93,6 +111,7 @@ time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
 # Create the trace line that is a point followed by a solid line
 trace_body1, = ax.plot([], [], '.-', lw=1, ms=2)
 trace_body2, = ax.plot([], [], '.-', lw=1, ms=2)
+trace_body3, = ax.plot([], [], '.-', lw=1, ms=2)
 
 ani = animation.FuncAnimation(fig, animate, time_scale, interval=10, blit=True)
 ax.grid(True)
