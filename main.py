@@ -1,6 +1,48 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from kivy.app import App
+from kivy.uix.widget import Widget
+from kivy.properties import (NumericProperty, ReferenceListProperty, ObjectProperty)
+from kivy.vector import Vector
+from kivy.clock import Clock
+from kivy.core.window import Window
+
+
+class PhysicsBody(Widget):
+    velocity_x = NumericProperty(0)
+    velocity_y = NumericProperty(0)
+    velocity = ReferenceListProperty(velocity_x, velocity_y)
+
+    position_x = NumericProperty(0)
+    position_y = NumericProperty(0)
+    position = ReferenceListProperty(position_x, position_y)
+
+
+class ThreeBodySim(Widget):
+    body1 = ObjectProperty(None)
+    body2 = ObjectProperty(None)
+    body3 = ObjectProperty(None)
+
+    def initialize_sim(self):
+        self.body1 = PhysicsBody(pos=(Window.width/2 + 100, Window.height/2), size=(10, 10))
+        self.body2 = PhysicsBody(pos=(Window.width/2 + 0, Window.height/2), size=(10, 10))
+        self.body3 = PhysicsBody(pos=(Window.width/2 - 100, Window.height/2), size=(10, 10))
+        self.add_widget(self.body1)
+        self.add_widget(self.body2)
+        self.add_widget(self.body3)
+        pass
+
+    def update(self, dt):
+        pass
+
+
+class ThreeBodyProblem(App):
+    def build(self):
+        sim = ThreeBodySim()
+        sim.initialize_sim()
+        Clock.schedule_interval(sim.update, 1.0 / 60.0)
+        return sim
 
 
 class Body:
@@ -76,43 +118,46 @@ def animate(step):
     return trace_body1, trace_body2, trace_body3, time_text
 
 
-body1 = Body(2, np.array([0, 1]), np.array([-1, 0]))
-body2 = Body(2, np.array([0, -1]), np.array([1, 0]))
-body3 = Body(2, np.array([0, 0]), np.array([0, 0]))
+if __name__ == '__main__':
+    ThreeBodyProblem().run()
+else:
+    body1 = Body(2, np.array([0, 1]), np.array([-1, 0]))
+    body2 = Body(2, np.array([0, -1]), np.array([1, 0]))
+    body3 = Body(2, np.array([0, 0]), np.array([0, 0]))
 
-frame_time = float(input("What is the frame time: "))
-time_scale = int(input("Number of frames to calculate through: "))
+    frame_time = float(input("What is the frame time: "))
+    time_scale = int(input("Number of frames to calculate through: "))
 
-for i in range(time_scale):
-    # Print the progress of the calculations
-    if (i % 100) == 0:
-        print("{}%".format(round((i / time_scale) * 100), 2))
+    for i in range(time_scale):
+        # Print the progress of the calculations
+        if (i % 100) == 0:
+            print("{}%".format(round((i / time_scale) * 100), 2))
 
-    body1.calc_gravitational_force(body2)
-    body1.calc_gravitational_force(body3)
-    body2.calc_gravitational_force(body1)
-    body2.calc_gravitational_force(body3)
-    body3.calc_gravitational_force(body1)
-    body3.calc_gravitational_force(body2)
+        body1.calc_gravitational_force(body2)
+        body1.calc_gravitational_force(body3)
+        body2.calc_gravitational_force(body1)
+        body2.calc_gravitational_force(body3)
+        body3.calc_gravitational_force(body1)
+        body3.calc_gravitational_force(body2)
 
-    body1.update_velocity_and_position(frame_time)
-    body2.update_velocity_and_position(frame_time)
-    body3.update_velocity_and_position(frame_time)
+        body1.update_velocity_and_position(frame_time)
+        body2.update_velocity_and_position(frame_time)
+        body3.update_velocity_and_position(frame_time)
 
-x_min, x_max = find_min_max_between_arrays(body1.position_history_x, body2.position_history_x)
-y_min, y_max = find_min_max_between_arrays(body1.position_history_y, body2.position_history_y)
+    x_min, x_max = find_min_max_between_arrays(body1.position_history_x, body2.position_history_x)
+    y_min, y_max = find_min_max_between_arrays(body1.position_history_y, body2.position_history_y)
 
-fig = plt.figure(figsize=(5, 5))
-ax = fig.add_subplot(autoscale_on=False, xlim=(x_min-1, x_max+1), ylim=(y_min-1, y_max+1))
+    fig = plt.figure(figsize=(5, 5))
+    ax = fig.add_subplot(autoscale_on=False, xlim=(x_min-1, x_max+1), ylim=(y_min-1, y_max+1))
 
-time_template = 'Frame = %d'
-time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
+    time_template = 'Frame = %d'
+    time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
 
-# Create the trace line that is a point followed by a solid line
-trace_body1, = ax.plot([], [], '.-', lw=1, ms=2)
-trace_body2, = ax.plot([], [], '.-', lw=1, ms=2)
-trace_body3, = ax.plot([], [], '.-', lw=1, ms=2)
+    # Create the trace line that is a point followed by a solid line
+    trace_body1, = ax.plot([], [], '.-', lw=1, ms=2)
+    trace_body2, = ax.plot([], [], '.-', lw=1, ms=2)
+    trace_body3, = ax.plot([], [], '.-', lw=1, ms=2)
 
-ani = animation.FuncAnimation(fig, animate, time_scale, interval=10, blit=True)
-ax.grid(True)
-plt.show()
+    ani = animation.FuncAnimation(fig, animate, time_scale, interval=10, blit=True)
+    ax.grid(True)
+    plt.show()

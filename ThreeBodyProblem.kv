@@ -1,0 +1,34 @@
+#:kivy 1.0.9
+
+<PhysicsBody>:
+    size: 10, 10
+    canvas:
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<ThreeBodySim>:
+    #body1: physics_body1
+    #body2: physics_body2
+    #body3: physics_body3
+
+    Label:
+        font_size: 50
+        center_x: root.width / 2
+        top: root.top - 30
+        text: "Three Body Problem"
+
+    #PhysicsBody:
+    #    id: physics_body1
+    #    center: self.parent.center
+
+
+    #PhysicsBody:
+    #    id: physics_body2
+    #    center: self.parent.center
+    #    center_y: self.parent.center_y + 20
+
+    #PhysicsBody:
+    #    id: physics_body3
+    #    center: self.parent.center
+    #    center_y: self.parent.center_y - 20
