@@ -52,6 +52,8 @@ class ThreeBodySim(Widget):
     body2 = ObjectProperty(None)
     body3 = ObjectProperty(None)
 
+    i = 0
+
     def initialize_sim(self):
         window_h_center = Window.height / 2
         window_w_center = Window.width / 2
@@ -73,16 +75,26 @@ class ThreeBodySim(Widget):
         self.add_widget(self.body3)
 
     def update(self, dt):
-        self.body1.calc_gravitational_force(self.body2)
-        self.body1.calc_gravitational_force(self.body3)
-        self.body2.calc_gravitational_force(self.body1)
-        self.body2.calc_gravitational_force(self.body3)
-        self.body3.calc_gravitational_force(self.body1)
-        self.body3.calc_gravitational_force(self.body2)
+        if self.i >= 3:
+            self.body1.calc_gravitational_force(self.body2)
+            self.body1.calc_gravitational_force(self.body3)
+            self.body2.calc_gravitational_force(self.body1)
+            self.body2.calc_gravitational_force(self.body3)
+            self.body3.calc_gravitational_force(self.body1)
+            self.body3.calc_gravitational_force(self.body2)
 
-        self.body1.update_velocity_and_position(dt)
-        self.body2.update_velocity_and_position(dt)
-        self.body3.update_velocity_and_position(dt)
+            self.body1.update_velocity_and_position(dt)
+            self.body2.update_velocity_and_position(dt)
+            self.body3.update_velocity_and_position(dt)
+
+    def on_touch_down(self, touch):
+        if self.i == 0:
+            self.body1.center = touch.pos
+        elif self.i == 1:
+            self.body2.center = touch.pos
+        elif self.i == 2:
+            self.body3.center = touch.pos
+        self.i = self.i + 1
 
 
 class ThreeBodyProblem(App):
