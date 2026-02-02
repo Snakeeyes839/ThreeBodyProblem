@@ -7,9 +7,68 @@
             pos: self.pos
             size: self.size
 
+<BodyUI>:
+    size: 150, 100
+    canvas:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+
 <ThreeBodySim>:
+    ui1: body1UI
+    ui2: body2UI
+    ui3: body3UI
+    btn1: add_button
+
     Label:
         font_size: 50
         center_x: root.width / 2
         top: root.top - 30
         text: "Three Body Problem"
+
+    Button:
+        id:add_button
+        center_x: root.width / 2
+        size: 150, 30
+        y: 30
+        text: "Add Physics Body"
+
+    BodyUI:
+        id: body1UI
+        x: root.x + 10
+        top: root.top - 10
+
+    BodyUI:
+        id: body2UI
+        x: root.x + 10
+        top: root.top - self.height - 20
+
+    BodyUI:
+        id: body3UI
+        x: root.x + 10
+        top: root.top - 2 * self.height - 30
+
+    Label:
+        font_size: 16
+        size: 150, 30
+        center_x: body1UI.center_x
+        top: root.top - 10
+        text: "Body 1"
+        color: 0, 0, 0, 1
+
+    Label:
+        font_size: 16
+        size: 150, 30
+        center_x: body2UI.center_x
+        top: body2UI.top
+        text: "Body 2"
+        color: 0, 0, 0, 1
+
+    Label:
+        font_size: 16
+        size: 150, 30
+        center_x: body3UI.center_x
+        top: body3UI.top
+        text: "Body 3"
+        color: 0, 0, 0, 1
