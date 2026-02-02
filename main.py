@@ -1,10 +1,22 @@
 import logging
+
+from kivy.config import Config
+
+#Config.set('graphics', 'fullscreen', 1)
+Config.set('graphics', 'width', 1920)
+Config.set('graphics', 'height', 1080)
+
 from kivy.app import App
 from kivy.uix.widget import Widget
+from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import (NumericProperty, ReferenceListProperty, ObjectProperty)
 from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.core.window import Window
+import random
 
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -29,6 +41,17 @@ class PhysicsBody(Widget):
     def set_initial_conditions(self, mass, init_v):
         self.mass = mass
         self.velocity = init_v
+
+    def update_initial_conditions(self, ui_info):
+        mass = int(ui_info.mass.text)
+        radius = int(ui_info.radius.text)
+        init_v = (int(ui_info.velocity_x.text), int(ui_info.velocity_y.text))
+        init_pos = (int(ui_info.position_x.text), int(ui_info.position_y.text))
+
+        self.mass = mass
+        self.size = (radius, radius)
+        self.velocity = init_v
+        self.center = init_pos
 
     def calc_gravitational_force(self, exerting_body):
         # G = 6.6743e−11
@@ -60,14 +83,14 @@ class PhysicsBody(Widget):
 
 class ThreeBodySim(Widget):
     bodies = []
-    bodyUI = ObjectProperty(None)
+    bodyUI = []
     add_button = ObjectProperty(None)
 
+    window_h_center = Window.height / 2
+    window_w_center = Window.width / 2
     click = 0
 
     def initialize_sim(self):
-        window_h_center = Window.height / 2
-        window_w_center = Window.width / 2
 
         r1 = 5
         r2 = 40
@@ -92,32 +115,80 @@ class ThreeBodySim(Widget):
 
         if self.click >= 3:
             # Applied Bodies
-            for i in range(len(self.bodies)):
+            for applied_body in self.bodies:
                 # Exerting Bodies
-                for j in range(len(self.bodies)):
-                    if i is not j:
-                        logging.debug('Calculating gravity for applied body {0} from exerting body {1}'.format(i, j))
-                        self.bodies[i].calc_gravitational_force(self.bodies[j])
+                for exerting_body in self.bodies:
+                    if applied_body is not exerting_body:
+                        logging.debug('Calculating gravity for applied body {0} from exerting body {1}'.format(applied_body, exerting_body))
+                        applied_body.calc_gravitational_force(exerting_body)
                     else:
-                        logging.debug('Skipping gravity of {0} from {1}. Dont apply gravity to self'.format(i, j))
+                        logging.debug('Skipping gravity of {0} from {1}. Dont apply gravity to self'.format(applied_body, exerting_body))
 
             for body in self.bodies:
                 logging.debug('Updating velocity and position')
                 body.update_velocity_and_position(dt)
+        else:
+            for i in range(len(self.bodies)):
+                self.bodies[i].update_initial_conditions(self.bodies[i].ui)
+            pass
 
     def button_callback(self, event):
-        window_h_center = Window.height / 2
-        window_w_center = Window.width / 2
-
         self.bodies.append(ObjectProperty(None))
 
-        self.bodies[self.click] = PhysicsBody(pos=(window_w_center + 50*self.click, window_h_center), size=(10, 10))
-        self.bodies[self.click].set_initial_conditions(200, Vector(0, -30 * self.click))
+        position = [random.randint(1, 1000), random.randint(1, 1000)]
+        radius = 20
+        mass = 2000
+        velocity = [0, 0]
 
-        self.add_widget(self.bodies[self.click])
+        body = PhysicsBody(pos=(self.window_w_center + position[0] - radius, self.window_h_center + position[1] -
+                                radius), size=(2*radius, 2*radius))
+
+        body.set_initial_conditions(mass, Vector(velocity[0], velocity[1]))
+
+        body.ui.grid.pos = (10, Window.height - (150 * (self.click+1)))
+
+        self.add_widget(body)
+        self.bodies[self.click] = body
+
+        body.ui.position_x.text = str(position[0])
+        body.ui.position_y.text = str(position[1])
+
+        body.ui.velocity_x.text = str(velocity[0])
+        body.ui.velocity_y.text = str(velocity[1])
+
+        body.ui.mass.text = str(mass)
+        body.ui.radius.text = str(radius)
+
+        # grid = GridLayout(pos=(15, Window.height - 150 * (self.click + 1)), cols=2, spacing=5,
+        #                  row_force_default=True, row_default_height=30,
+        #                  col_force_default=False, col_default_width=100)
+        # Object Position
+        # grid.add_widget(Label(text='Position'))
+        # pos_box = BoxLayout(orientation='horizontal')
+        # pos_box.add_widget(TextInput(text=str(position[0])))
+        # pos_box.add_widget(TextInput(text=str(position[0])))
+        # grid.add_widget(pos_box)
+        # # Object Velocity
+        # grid.add_widget(Label(text='Velocity'))
+        # vel_box = BoxLayout(orientation='horizontal')
+        # vel_box.add_widget(TextInput(text=str(velocity[0])))
+        # vel_box.add_widget(TextInput(text=str(velocity[1])))
+        # grid.add_widget(vel_box)
+        # # Object Mass
+        # grid.add_widget(Label(text='Mass'))
+        # grid.add_widget(TextInput(text=str(mass)))
+        # # Object Radius
+        # grid.add_widget(Label(text='Radius'))
+        # grid.add_widget(TextInput(text=str(radius)))
+
+        #self.bodyUI.append(grid)
+
+        #self.add_widget(grid)
+
+        # Without this the ellipse physics bodies don't appear for some reason
+        self.add_widget(Label(text=""))
 
         logging.debug(len(self.bodies))
-
         self.click += 1
 
     # def on_touch_down(self, touch):

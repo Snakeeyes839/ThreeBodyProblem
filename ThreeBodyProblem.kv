@@ -1,24 +1,72 @@
 #:kivy 1.0.9
 
 <PhysicsBody>:
+    ui: body_ui
     size: 10, 10
     canvas:
         Ellipse:
             pos: self.pos
             size: self.size
 
-<BodyUI>:
-    size: 150, 100
-    canvas:
-        Rectangle:
-            pos: self.pos
-            size: self.size
+    BodyUI:
+        id: body_ui
+
+
+
+<BodyUI>
+    position_x: pos_x
+    position_y: pos_y
+    velocity_x: vel_x
+    velocity_y: vel_y
+    mass: mass
+    radius: rad
+    grid: grid
+
+    GridLayout:
+        id: grid
+        cols: 2
+        spacing: 5
+
+        pos: (0,0)
+
+        row_force_default: True
+        row_default_height: 30
+        col_force_default: True
+        col_default_width: 100
+
+        Label:
+            text: "Position"
+        BoxLayout:
+            orientation: "horizontal"
+            TextInput:
+                id: pos_x
+                text: "0"
+            TextInput:
+                id: pos_y
+                text: "0"
+        Label:
+            text: "Velocity"
+        BoxLayout:
+            orientation: "horizontal"
+            TextInput:
+                id: vel_x
+                text: "0"
+            TextInput:
+                id: vel_y
+                text: "0"
+        Label:
+            text: "Mass"
+        TextInput:
+            id: mass
+            text: "2000"
+        Label:
+            text: "Radius"
+        TextInput:
+            id: rad
+            text: "10"
 
 
 <ThreeBodySim>:
-    ui1: body1UI
-    ui2: body2UI
-    ui3: body3UI
     btn1: add_button
 
     Label:
@@ -33,42 +81,3 @@
         size: 150, 30
         y: 30
         text: "Add Physics Body"
-
-    BodyUI:
-        id: body1UI
-        x: root.x + 10
-        top: root.top - 10
-
-    BodyUI:
-        id: body2UI
-        x: root.x + 10
-        top: root.top - self.height - 20
-
-    BodyUI:
-        id: body3UI
-        x: root.x + 10
-        top: root.top - 2 * self.height - 30
-
-    Label:
-        font_size: 16
-        size: 150, 30
-        center_x: body1UI.center_x
-        top: root.top - 10
-        text: "Body 1"
-        color: 0, 0, 0, 1
-
-    Label:
-        font_size: 16
-        size: 150, 30
-        center_x: body2UI.center_x
-        top: body2UI.top
-        text: "Body 2"
-        color: 0, 0, 0, 1
-
-    Label:
-        font_size: 16
-        size: 150, 30
-        center_x: body3UI.center_x
-        top: body3UI.top
-        text: "Body 3"
-        color: 0, 0, 0, 1
