@@ -2,16 +2,12 @@ import logging
 
 from kivy.config import Config
 
-#Config.set('graphics', 'fullscreen', 1)
 Config.set('graphics', 'width', 1920)
 Config.set('graphics', 'height', 1080)
 
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import (NumericProperty, ReferenceListProperty, ObjectProperty)
 from kivy.vector import Vector
 from kivy.clock import Clock
@@ -91,23 +87,6 @@ class ThreeBodySim(Widget):
     click = 0
 
     def initialize_sim(self):
-
-        r1 = 5
-        r2 = 40
-        r3 = 5
-
-        #self.bodies[0] = PhysicsBody(pos=(window_w_center + 100 - r1, window_h_center - r1), size=(2*r1, 2*r1))
-        #self.bodies[1] = PhysicsBody(pos=(window_w_center - r2, window_h_center - r2), size=(2*r2, 2*r2))
-        #self.bodies[2] = PhysicsBody(pos=(window_w_center - 100 - r3, window_h_center - r3), size=(2*r3, 2*r3))
-
-        #self.bodies[0].set_initial_conditions(200, Vector(0, -30))
-        #self.bodies[1].set_initial_conditions(100000, Vector(0, 0))
-        #self.bodies[2].set_initial_conditions(200, Vector(0, 30))
-
-        #self.add_widget(self.bodies[0])
-        #self.add_widget(self.bodies[1])
-        #self.add_widget(self.bodies[2])
-
         add_button = self.btn1
         add_button.bind(on_press=self.button_callback)
 
@@ -159,42 +138,11 @@ class ThreeBodySim(Widget):
         body.ui.mass.text = str(mass)
         body.ui.radius.text = str(radius)
 
-        # grid = GridLayout(pos=(15, Window.height - 150 * (self.click + 1)), cols=2, spacing=5,
-        #                  row_force_default=True, row_default_height=30,
-        #                  col_force_default=False, col_default_width=100)
-        # Object Position
-        # grid.add_widget(Label(text='Position'))
-        # pos_box = BoxLayout(orientation='horizontal')
-        # pos_box.add_widget(TextInput(text=str(position[0])))
-        # pos_box.add_widget(TextInput(text=str(position[0])))
-        # grid.add_widget(pos_box)
-        # # Object Velocity
-        # grid.add_widget(Label(text='Velocity'))
-        # vel_box = BoxLayout(orientation='horizontal')
-        # vel_box.add_widget(TextInput(text=str(velocity[0])))
-        # vel_box.add_widget(TextInput(text=str(velocity[1])))
-        # grid.add_widget(vel_box)
-        # # Object Mass
-        # grid.add_widget(Label(text='Mass'))
-        # grid.add_widget(TextInput(text=str(mass)))
-        # # Object Radius
-        # grid.add_widget(Label(text='Radius'))
-        # grid.add_widget(TextInput(text=str(radius)))
-
-        #self.bodyUI.append(grid)
-
-        #self.add_widget(grid)
-
         # Without this the ellipse physics bodies don't appear for some reason
         self.add_widget(Label(text=""))
 
         logging.debug(len(self.bodies))
         self.click += 1
-
-    # def on_touch_down(self, touch):
-    #     if self.click < 3:
-    #         self.bodies[self.click].center = touch.pos
-    #         self.click = self.click + 1
 
 
 class ThreeBodyProblem(App):
