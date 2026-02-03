@@ -8,15 +8,25 @@ Config.set('graphics', 'height', 1080)
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
 from kivy.properties import (NumericProperty, ReferenceListProperty, ObjectProperty)
 from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.core.window import Window
 import random
+import re
 
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 # logging.disable(logging.DEBUG)
+
+
+# Input is restricted to numeric, but we still need to account for null or '-'
+def to_int(value):
+    if value is '-' or value is '':
+        return 0
+    else:
+        return int(value)
 
 
 class BodyUI(Widget):
@@ -35,16 +45,16 @@ class PhysicsBody(Widget):
     gravitational_force = ReferenceListProperty(gravitational_force_x, gravitational_force_y)
 
     def set_initial_conditions(self, mass, init_v):
-        self.mass = mass
+        self.mass = abs(mass)
         self.velocity = init_v
 
     def update_initial_conditions(self, ui_info):
-        mass = int(ui_info.mass.text)
-        radius = int(ui_info.radius.text)
-        init_v = (int(ui_info.velocity_x.text), int(ui_info.velocity_y.text))
+        mass = abs(to_int(ui_info.mass.text))
+        radius = abs(to_int(ui_info.radius.text))
+        init_v = (to_int(ui_info.velocity_x.text), to_int(ui_info.velocity_y.text))
 
-        x = (Window.width / 2) + int(ui_info.position_x.text)
-        y = (Window.height / 2) + int(ui_info.position_y.text)
+        x = (Window.width / 2) + to_int(ui_info.position_x.text)
+        y = (Window.height / 2) + to_int(ui_info.position_y.text)
 
         self.mass = mass
         self.size = (2*radius, 2*radius)
@@ -128,8 +138,6 @@ class ThreeBodySim(Widget):
         x = window_w_center + position[0]
         y = window_h_center + position[1]
 
-        print("{} {}".format(x, y))
-
         body = PhysicsBody(pos=(x, y), size=(2*radius, 2*radius))
 
         body.set_initial_conditions(mass, Vector(velocity[0], velocity[1]))
@@ -151,7 +159,6 @@ class ThreeBodySim(Widget):
         # Without this the ellipse physics bodies don't appear for some reason
         self.add_widget(Label(text=""))
 
-        logging.debug(len(self.bodies))
         self.click += 1
 
     def pause_play_callback(self, event):

@@ -41,9 +41,11 @@
             TextInput:
                 id: pos_x
                 text: "0"
+                input_filter: "int"
             TextInput:
                 id: pos_y
                 text: "0"
+                input_filter: "int"
         Label:
             text: "Velocity"
         BoxLayout:
@@ -51,19 +53,23 @@
             TextInput:
                 id: vel_x
                 text: "0"
+                input_filter: "int"
             TextInput:
                 id: vel_y
                 text: "0"
+                input_filter: "int"
         Label:
             text: "Mass"
         TextInput:
             id: mass
             text: "2000"
+            input_filter: "int"
         Label:
             text: "Radius"
         TextInput:
             id: rad
             text: "10"
+            input_filter: "int"
 
 
 <ThreeBodySim>:
