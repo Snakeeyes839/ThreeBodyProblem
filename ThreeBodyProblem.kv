@@ -67,7 +67,8 @@
 
 
 <ThreeBodySim>:
-    btn1: add_button
+    add_btn: add_button
+    play_btn: play_button
 
     Label:
         font_size: 50
@@ -81,3 +82,10 @@
         size: 150, 30
         y: 30
         text: "Add Physics Body"
+
+    Button:
+        id:play_button
+        center_x: root.width - 65
+        size: 50, 30
+        y: 30
+        text: "Play"

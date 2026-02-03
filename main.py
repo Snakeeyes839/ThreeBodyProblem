@@ -42,16 +42,18 @@ class PhysicsBody(Widget):
         mass = int(ui_info.mass.text)
         radius = int(ui_info.radius.text)
         init_v = (int(ui_info.velocity_x.text), int(ui_info.velocity_y.text))
-        init_pos = (int(ui_info.position_x.text), int(ui_info.position_y.text))
+
+        x = (Window.width / 2) + int(ui_info.position_x.text)
+        y = (Window.height / 2) + int(ui_info.position_y.text)
 
         self.mass = mass
-        self.size = (radius, radius)
+        self.size = (2*radius, 2*radius)
         self.velocity = init_v
-        self.center = init_pos
+        self.center = (x, y)
 
     def calc_gravitational_force(self, exerting_body):
-        # G = 6.6743e−11
-        G = 1
+        # G = 6.6743e−113
+        G = 6.6743
 
         # Newton's Law of Universal Gravitation in Vector Form
         # Fg = -G * (m1m2 / |r_21|^3) * r_21
@@ -82,17 +84,18 @@ class ThreeBodySim(Widget):
     bodyUI = []
     add_button = ObjectProperty(None)
 
-    window_h_center = Window.height / 2
-    window_w_center = Window.width / 2
     click = 0
+    is_paused = True
 
     def initialize_sim(self):
-        add_button = self.btn1
-        add_button.bind(on_press=self.button_callback)
+        add_button = self.add_btn
+        play_btn = self.play_btn
+        add_button.bind(on_press=self.add_callback)
+        play_btn.bind(on_press=self.pause_play_callback)
 
     def update(self, dt):
 
-        if self.click >= 3:
+        if not self.is_paused:
             # Applied Bodies
             for applied_body in self.bodies:
                 # Exerting Bodies
@@ -111,16 +114,23 @@ class ThreeBodySim(Widget):
                 self.bodies[i].update_initial_conditions(self.bodies[i].ui)
             pass
 
-    def button_callback(self, event):
+    def add_callback(self, event):
+        window_h_center = Window.height / 2
+        window_w_center = Window.width / 2
+
         self.bodies.append(ObjectProperty(None))
 
-        position = [random.randint(1, 1000), random.randint(1, 1000)]
+        position = [random.randint(-500, 500), random.randint(-300, 300)]
+        velocity = [random.randint(-20, 20), random.randint(-20, 20)]
         radius = 20
-        mass = 2000
-        velocity = [0, 0]
+        mass = 20000
 
-        body = PhysicsBody(pos=(self.window_w_center + position[0] - radius, self.window_h_center + position[1] -
-                                radius), size=(2*radius, 2*radius))
+        x = window_w_center + position[0]
+        y = window_h_center + position[1]
+
+        print("{} {}".format(x, y))
+
+        body = PhysicsBody(pos=(x, y), size=(2*radius, 2*radius))
 
         body.set_initial_conditions(mass, Vector(velocity[0], velocity[1]))
 
@@ -143,6 +153,14 @@ class ThreeBodySim(Widget):
 
         logging.debug(len(self.bodies))
         self.click += 1
+
+    def pause_play_callback(self, event):
+        self.is_paused = not self.is_paused
+
+        if self.is_paused:
+            self.play_btn.text = "Play"
+        else:
+            self.play_btn.text = "Pause"
 
 
 class ThreeBodyProblem(App):
