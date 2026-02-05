@@ -15,3 +15,39 @@ Adding objects to the scene can be done with the "**Add Physics Body**" button a
 Starting and stopping the simulation can be doen with the "**Play/Pause**"  button at the bottom right of the screen. Hitting "Play" will start the simulation. Hitting "Pause" will reset the scene back to  the original conditions of the scene.
 
 Editing initial values of the scene is done by entering numerical values in the text field that appears after adding a physics body.
+
+**Loading Presets**
+
+There are a few preset scenes that are defined in the *presets.xml*.  Loading a preset can be done by clicking the **Preset *n*** button in the top right corner of the screen. Loading a preset will clear the current scene and add the defined objects.
+
+**Adding Presets**
+
+Currently, the way to add a preset is to edit the *presets.xml*. You must add a preset using the **\<preset>** tag. Inside the **\<preset>** tag the bodies must individually be defined using the **\<body>** tag. The initial conditions of the body must be defined inside the **\<body>** tag.
+The initial conditions to be defined are **<position_x>**, **<position_y>**, **<velocity_x>**, **<velocity_y>**, **\<mass>**, and **\<radius>**
+
+The preset buttons are dynamically created on load, and the name defined in the preset tag will appear as the button text in the scene.
+
+**Preset Example:**
+```
+presets.xml
+
+<presets>
+    <preset name="Preset Test">
+        <body>
+            <position_x>0</position_x>
+            <position_y>0</position_y>
+            <velocity_x>0</velocity_x>
+            <velocity_y>0</velocity_y>
+            <mass>100000</mass>
+            <radius>20</radius>
+        </body>
+        <body>
+            <position_x>100</position_x>
+            <position_y>0</position_y>
+            <velocity_x>0</velocity_x>
+            <velocity_y>-80</velocity_y>
+            <mass>100</mass>
+            <radius>5</radius>
+        </body>
+    </preset>
+<presets>```

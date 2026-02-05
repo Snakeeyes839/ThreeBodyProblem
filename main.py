@@ -7,12 +7,14 @@ Config.set('graphics', 'height', 1080)
 
 from kivy.app import App
 from kivy.uix.widget import Widget
-from kivy.uix.label import Label
+from kivy.uix.button import Button
 from kivy.properties import (NumericProperty, ReferenceListProperty, ObjectProperty)
 from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.core.window import Window
+
 import random
+import xml.etree.ElementTree as ET
 
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -40,6 +42,40 @@ def to_int(value):
 def rearrange_ui(bodies):
     for i in range(len(bodies)):
         bodies[i].ui.grid.pos = (10, Window.height - (bodies[i].ui.grid.height * (i + 1)))
+
+
+def add_physics_body(bodies, body_params):
+    count = len(bodies)
+
+    window_h_center = Window.height / 2
+    window_w_center = Window.width / 2
+
+    pos = (window_w_center + body_params.pos_x, window_h_center + body_params.pos_y)
+    size = (2*body_params.radius, 2*body_params.radius)
+
+    body = PhysicsBody(pos=pos, size=size)
+    body.ui.grid.pos = (10, Window.height - (body.ui.grid.height * (count + 1)))
+
+    # Set the UI to display Object parameters
+    body.ui.position_x.text = str(body_params.pos_x)
+    body.ui.position_y.text = str(body_params.pos_y)
+    body.ui.velocity_x.text = str(body_params.vel_x)
+    body.ui.velocity_y.text = str(body_params.vel_y)
+    body.ui.mass.text = str(body_params.mass)
+    body.ui.radius.text = str(body_params.radius)
+
+    body.set_initial_conditions(body.ui)
+
+    return body
+
+
+class BodyParameters:
+    pos_x = 0
+    pos_y = 0
+    vel_x = 0
+    vel_y = 0
+    mass = 1
+    radius = 1
 
 
 class BodyUI(Widget):
@@ -119,8 +155,21 @@ class ThreeBodySim(Widget):
     def initialize_sim(self):
         add_button = self.add_btn
         play_btn   = self.play_btn
+
         add_button.bind(on_press=self.add_callback)
         play_btn.bind(on_press=self.pause_play_callback)
+
+        # Add preset buttons
+        tree = ET.parse('presets.xml')
+        root = tree.getroot()
+        offset = 1
+        for child in root:
+            x_offset = Window.width - 65
+            y_offset = Window.height - (40 * offset)
+            offset += 1
+            btn = Button(size=(100, 30), center_x=x_offset, center_y=y_offset, text=child.get('name'))
+            btn.bind(on_press=self.load_preset_callback)
+            self.add_widget(btn)
 
     def update(self, dt):
         if not self.is_paused:
@@ -142,64 +191,82 @@ class ThreeBodySim(Widget):
                 self.bodies[i].set_initial_conditions(self.bodies[i].ui)
 
     def add_callback(self, event):
-        count = len(self.bodies)
-
         # Later add adjusting UI so more fit of the screen
-        if count >= MAX_ON_SCREEN:
+        if len(self.bodies) >= MAX_ON_SCREEN:
             return
 
-        window_h_center = Window.height / 2
-        window_w_center = Window.width / 2
-
-        self.bodies.append(ObjectProperty(None))
+        body_params = BodyParameters()
 
         # Randomly get Object parameters
-        position_x = random.randint(MIN_POS_X, MAX_POS_X)
-        position_y = random.randint(MIN_POS_Y, MAX_POS_Y)
-        velocity_x = random.randint(MIN_VEL_X, MAX_VEL_X)
-        velocity_y = random.randint(MIN_VEL_Y, MAX_VEL_Y)
-        radius = random.randint(MIN_R, MAX_R)
-        mass = random.randint(MIN_M, MAX_M)
+        body_params.pos_x = random.randint(MIN_POS_X, MAX_POS_X)
+        body_params.pos_y = random.randint(MIN_POS_Y, MAX_POS_Y)
+        body_params.vel_x = random.randint(MIN_VEL_X, MAX_VEL_X)
+        body_params.vel_y = random.randint(MIN_VEL_Y, MAX_VEL_Y)
+        body_params.mass = random.randint(MIN_M, MAX_M)
+        body_params.radius = random.randint(MIN_R, MAX_R)
 
-        x = window_w_center + position_x
-        y = window_h_center + position_y
+        body = add_physics_body(self.bodies, body_params)
 
-        body = PhysicsBody(pos=(x, y), size=(2*radius, 2*radius))
-        body.ui.grid.pos = (10, Window.height - (body.ui.grid.height * (count+1)))
+        # Bind the delete button
+        body.ui.delete_btn.bind(on_press=self.delete_object_callback)
 
         # Add the widget to the sim and to the list of bodies
         self.add_widget(body)
-        self.bodies[count] = body
+        self.bodies.append(body)
 
-        # Set the UI to display Object parameters
-        body.ui.position_x.text = str(position_x)
-        body.ui.position_y.text = str(position_y)
-        body.ui.velocity_x.text = str(velocity_x)
-        body.ui.velocity_y.text = str(velocity_y)
-        body.ui.mass.text   = str(mass)
-        body.ui.radius.text = str(radius)
-
-        body.set_initial_conditions(body.ui)
-
-        # Bind the delete button
-        body.ui.delete_btn.bind(on_press=lambda event: self.delete_object_callback(event, body, self.bodies))
-
-        # Without this the ellipse physics bodies don't appear for some reason
-        self.add_widget(Label(text=""))
-
-    def pause_play_callback(self, event):
+    def pause_play_callback(self, instance):
         self.is_paused = not self.is_paused
 
         if self.is_paused:
-            self.play_btn.text = 'Play'
+            instance.text = 'Play'
         else:
-            self.play_btn.text = 'Pause'
+            instance.text = 'Pause'
 
-    def delete_object_callback(self, event, body, bodies):
-        self.remove_widget(body)
-        if body in bodies:
-            bodies.remove(body)
-            rearrange_ui(bodies)
+    def delete_object_callback(self, instance):
+        # Going to rethink this design, but the 'delete' button's great-grandparent is the base Physics object
+        self.remove_widget(instance.parent.parent.parent)
+        self.bodies.remove(instance.parent.parent.parent)
+        rearrange_ui(self.bodies)
+
+    def load_preset_callback(self, instance):
+        # When loading a preset remove the bodies currently loaded
+        for b in self.bodies:
+            self.remove_widget(b)
+        self.bodies.clear()
+
+        tree = ET.parse('presets.xml')
+        root = tree.getroot()
+        presets = root.findall('preset')
+
+        preset_to_load = None
+
+        for p in presets:
+            if p.get('name') == instance.text:
+                preset_to_load = p
+                break
+
+        if preset_to_load is None:
+            logging.debug('Error when finding XML preset: {}'.format(instance.text))
+            return
+
+        body_params = BodyParameters()
+
+        for b in preset_to_load.findall('body'):
+            body_params.pos_x  = int(b.find('position_x').text)
+            body_params.pos_y  = int(b.find('position_y').text)
+            body_params.vel_x  = int(b.find('velocity_x').text)
+            body_params.vel_y  = int(b.find('velocity_y').text)
+            body_params.mass   = int(b.find('mass').text)
+            body_params.radius = int(b.find('radius').text)
+
+            body = add_physics_body(self.bodies, body_params)
+
+            # Bind the delete button
+            body.ui.delete_btn.bind(on_press=self.delete_object_callback)
+
+            # Add the widget to the sim and to the list of bodies
+            self.add_widget(body)
+            self.bodies.append(body)
 
 
 class ThreeBodyProblem(App):
