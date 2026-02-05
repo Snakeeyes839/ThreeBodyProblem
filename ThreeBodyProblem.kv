@@ -21,13 +21,13 @@
     mass: mass
     radius: rad
     grid: grid
+    delete_btn: delete_button
 
     GridLayout:
         id: grid
         cols: 2
         spacing: 5
-
-        pos: (0,0)
+        size: 100, 180
 
         row_force_default: True
         row_default_height: 30
@@ -70,6 +70,10 @@
             id: rad
             text: "10"
             input_filter: "int"
+        Button:
+            id: delete_button
+            color: (1,0,0)
+            text: "Remove"
 
 
 <ThreeBodySim>:
