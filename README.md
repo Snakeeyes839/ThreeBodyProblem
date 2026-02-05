@@ -12,13 +12,13 @@ A Kivy based UI allows you to add round bodied objects to the screen and edit in
 
 Adding objects to the scene can be done with the "**Add Physics Body**" button at the bottom center of the screen. This will add an object to a random coordinate on the screen with a random velocity
 
-Starting and stopping the simulation can be doen with the "**Play/Pause**"  button at the bottom right of the screen. Hitting "Play" will start the simulation. Hitting "Pause" will reset the scene back to  the original conditions of the scene.
+Starting and stopping the simulation can be done with the "**Play/Pause**"  button at the bottom right of the screen. Hitting "Play" will start the simulation. Hitting "Pause" will reset the scene back to  the original conditions of the scene.
 
 Editing initial values of the scene is done by entering numerical values in the text field that appears after adding a physics body.
 
 **Loading Presets**
 
-There are a few preset scenes that are defined in the *presets.xml*.  Loading a preset can be done by clicking the **Preset *n*** button in the top right corner of the screen. Loading a preset will clear the current scene and add the defined objects.
+There are a few preset scenes that are defined in the *presets.xml*.  Loading a preset can be done by clicking one of the preset buttons in the top right corner of the screen. Loading a preset will clear the current scene and add the defined objects.
 
 **Adding Presets**
 
